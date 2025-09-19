@@ -1,4 +1,4 @@
-# Rotary Speakers - Speaker Pipeline Management
+# Georgetown Rotary Speakers - Speaker Pipeline Management
 
 A dual-view web application for managing Rotary Club speaker outreach and scheduling. Track potential speakers through your pipeline with both Kanban board and spreadsheet views.
 
@@ -41,7 +41,7 @@ A dual-view web application for managing Rotary Club speaker outreach and schedu
 
 1. Clone or download this repository:
 ```bash
-git clone https://github.com/yourusername/rotary-speakers.git
+git clone https://github.com/yourusername/georgetown-rotary-speakers.git
 cd rotary-speakers
 ```
 
@@ -66,9 +66,9 @@ npx http-server
 ```bash
 git init
 git add .
-git commit -m "Initial commit - Rotary Speakers application"
+git commit -m "Initial commit - Georgetown Rotary Speakers application"
 git branch -M main
-git remote add origin https://github.com/yourusername/rotary-speakers.git
+git remote add origin https://github.com/yourusername/georgetown-rotary-speakers.git
 git push -u origin main
 ```
 
@@ -80,7 +80,7 @@ git push -u origin main
    - Click Save
 
 4. Your application will be available at:
-   `https://yourusername.github.io/rotary-speakers/`
+   `https://yourusername.github.io/georgetown-rotary-speakers/`
 
 ## Usage Instructions
 
