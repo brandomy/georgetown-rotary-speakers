@@ -1,0 +1,119 @@
+/* Custom styles for Rotary Speakers */
+
+/* Kanban card styles */
+.speaker-card {
+    @apply bg-white p-3 rounded-lg shadow-sm border border-gray-200 cursor-move hover:shadow-md transition-shadow;
+}
+
+.speaker-card.dragging {
+    @apply opacity-50;
+}
+
+.droppable.drag-over {
+    @apply bg-blue-50;
+}
+
+/* Spreadsheet styles */
+.editable-cell {
+    @apply cursor-text hover:bg-gray-50;
+}
+
+.editable-cell:focus {
+    @apply bg-blue-50 outline-none;
+}
+
+/* Sort indicators */
+.sort-indicator {
+    @apply inline-block ml-1 text-gray-400;
+}
+
+th[data-sort].sorted-asc .sort-indicator::after {
+    content: '↑';
+}
+
+th[data-sort].sorted-desc .sort-indicator::after {
+    content: '↓';
+}
+
+/* Status badges */
+.status-badge {
+    @apply px-2 py-1 rounded-full text-xs font-medium;
+}
+
+.status-badge.Ideas {
+    @apply bg-purple-100 text-purple-800;
+}
+
+.status-badge.Approached {
+    @apply bg-blue-100 text-blue-800;
+}
+
+.status-badge.Agreed {
+    @apply bg-green-100 text-green-800;
+}
+
+.status-badge.Scheduled {
+    @apply bg-yellow-100 text-yellow-800;
+}
+
+.status-badge.Spoken {
+    @apply bg-gray-100 text-gray-800;
+}
+
+.status-badge.Dropped {
+    @apply bg-red-100 text-red-800;
+}
+
+/* Animation for card addition */
+@keyframes slideIn {
+    from {
+        transform: translateY(-10px);
+        opacity: 0;
+    }
+    to {
+        transform: translateY(0);
+        opacity: 1;
+    }
+}
+
+.speaker-card.new-card {
+    animation: slideIn 0.3s ease-out;
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+    .kanban-view {
+        overflow-x: auto;
+        -webkit-overflow-scrolling: touch;
+    }
+
+    .kanban-view > div {
+        min-width: 1200px;
+    }
+}
+
+/* Print styles */
+@media print {
+    header {
+        display: none;
+    }
+
+    .kanban-column {
+        break-inside: avoid;
+    }
+}
+
+/* Loading spinner */
+.spinner {
+    border: 2px solid #f3f3f3;
+    border-top: 2px solid #3498db;
+    border-radius: 50%;
+    width: 20px;
+    height: 20px;
+    animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
+}
