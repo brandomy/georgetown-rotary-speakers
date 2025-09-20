@@ -1,9 +1,23 @@
 /* Custom styles for Rotary Speakers */
 
+/* Rotary Brand Colors */
+:root {
+    --rotary-azure: #005daa;
+    --rotary-gold: #febd11;
+    --rotary-navy: #00246c;
+    --rotary-lightblue: #01b4e7;
+    --rotary-white: #ffffff;
+    --rotary-black: #000000;
+}
+
 /* Kanban card styles */
 .speaker-card {
     @apply bg-white p-3 rounded-lg shadow-md border border-gray-300 cursor-move hover:shadow-lg transition-all duration-200;
     box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+}
+
+.speaker-card:hover {
+    border-color: var(--rotary-azure);
 }
 
 .speaker-card.dragging {
@@ -11,7 +25,7 @@
 }
 
 .droppable.drag-over {
-    @apply bg-blue-50;
+    background-color: rgba(0, 93, 170, 0.05);
 }
 
 /* Spreadsheet styles */
@@ -20,7 +34,8 @@
 }
 
 .editable-cell:focus {
-    @apply bg-blue-50 outline-none;
+    background-color: rgba(0, 93, 170, 0.05);
+    @apply outline-none;
 }
 
 /* Sort indicators */
@@ -39,6 +54,7 @@ th[data-sort].sorted-desc .sort-indicator::after {
 /* Status badges */
 .status-badge {
     @apply px-2 py-1 rounded-full text-xs font-medium;
+    font-family: Arial, sans-serif;
 }
 
 .status-badge.Ideas {
@@ -46,7 +62,8 @@ th[data-sort].sorted-desc .sort-indicator::after {
 }
 
 .status-badge.Approached {
-    @apply bg-blue-100 text-blue-800;
+    background-color: rgba(0, 93, 170, 0.1);
+    color: var(--rotary-azure);
 }
 
 .status-badge.Agreed {
@@ -54,7 +71,8 @@ th[data-sort].sorted-desc .sort-indicator::after {
 }
 
 .status-badge.Scheduled {
-    @apply bg-yellow-100 text-yellow-800;
+    background-color: rgba(254, 189, 17, 0.1);
+    color: #a16207;
 }
 
 .status-badge.Spoken {
@@ -107,7 +125,7 @@ th[data-sort].sorted-desc .sort-indicator::after {
 /* Loading spinner */
 .spinner {
     border: 2px solid #f3f3f3;
-    border-top: 2px solid #3498db;
+    border-top: 2px solid var(--rotary-azure);
     border-radius: 50%;
     width: 20px;
     height: 20px;

@@ -407,7 +407,7 @@ function openModal(speakerId = null, defaultStatus = 'Ideas') {
     if (speakerId) {
         const speaker = speakers.find(s => s.id === speakerId);
         if (speaker) {
-            title.textContent = 'Edit Speaker';
+            title.textContent = 'EDIT SPEAKER';
             document.getElementById('speakerId').value = speaker.id;
             document.getElementById('speakerName').value = speaker.name;
             document.getElementById('speakerEmail').value = speaker.email || '';
@@ -423,7 +423,7 @@ function openModal(speakerId = null, defaultStatus = 'Ideas') {
             statusField.classList.remove('hidden');
         }
     } else {
-        title.textContent = 'Add Speaker';
+        title.textContent = 'ADD SPEAKER';
         document.getElementById('speakerId').value = '';
         document.getElementById('speakerStatus').value = defaultStatus;
         if (currentView === 'spreadsheet') {
@@ -483,7 +483,7 @@ function editSpeaker(id) {
 }
 
 function deleteSpeaker(id) {
-    if (confirm('Are you sure you want to delete this speaker?')) {
+    if (confirm('Are you sure we should remove this speaker from our list?')) {
         speakers = speakers.filter(s => s.id !== id);
         saveData();
         renderView();
@@ -535,7 +535,7 @@ function importFromCSV(e) {
         const rows = parseCSV(text);
 
         if (rows.length < 2) {
-            alert('Invalid CSV file');
+            alert('We couldn\'t process this CSV file - please check the format');
             return;
         }
 
@@ -543,7 +543,7 @@ function importFromCSV(e) {
         const nameIndex = headers.findIndex(h => h.includes('name'));
 
         if (nameIndex === -1) {
-            alert('CSV must have a Name column');
+            alert('We need a "Name" column in the CSV file');
             return;
         }
 
@@ -577,14 +577,14 @@ function importFromCSV(e) {
         }
 
         if (newSpeakers.length > 0) {
-            if (confirm(`Import ${newSpeakers.length} speakers? This will add to existing speakers.`)) {
+            if (confirm(`We found ${newSpeakers.length} speakers to import. Should we add them to our existing list?`)) {
                 speakers.push(...newSpeakers);
                 saveData();
                 renderView();
-                alert(`Successfully imported ${newSpeakers.length} speakers`);
+                alert(`We\'ve successfully imported ${newSpeakers.length} speakers`);
             }
         } else {
-            alert('No valid speakers found in CSV');
+            alert('We couldn\'t find any valid speakers in the CSV file');
         }
     };
 
