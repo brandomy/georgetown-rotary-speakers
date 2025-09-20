@@ -20,6 +20,10 @@
     border-color: var(--rotary-azure);
 }
 
+.speaker-card a {
+    color: var(--rotary-azure);
+}
+
 .speaker-card.dragging {
     @apply opacity-50;
 }

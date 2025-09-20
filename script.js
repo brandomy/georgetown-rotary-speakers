@@ -40,6 +40,13 @@ function initializeEventListeners() {
     document.getElementById('cancelModal').addEventListener('click', closeModal);
     document.getElementById('speakerForm').addEventListener('submit', handleFormSubmit);
 
+    // Initialize first link input listener
+    document.addEventListener('input', (e) => {
+        if (e.target.classList.contains('link-input')) {
+            updateAddLinkButton();
+        }
+    });
+
     // Add speaker buttons in Kanban view
     document.querySelectorAll('.add-speaker-btn').forEach(btn => {
         btn.addEventListener('click', (e) => {
@@ -144,11 +151,15 @@ function createSpeakerCard(speaker) {
                 </button>
             </div>
         </div>
-        ${speaker.jobTitle || speaker.organization ? `<p class="text-sm text-gray-600 mb-1">🏢 ${escapeHtml(speaker.jobTitle || '')}${speaker.jobTitle && speaker.organization ? ' at ' : ''}${escapeHtml(speaker.organization || '')}</p>` : ''}
+        ${speaker.organization ? `<p class="text-sm text-gray-600 mb-1">🏢 ${escapeHtml(speaker.organization)}</p>` : ''}
+        ${speaker.jobTitle ? `<p class="text-sm text-gray-600 mb-1">💼 ${escapeHtml(speaker.jobTitle)}</p>` : ''}
+        ${speaker.phone ? `<p class="text-sm text-gray-600 mb-1">📞 ${escapeHtml(speaker.phone)}</p>` : ''}
+        ${speaker.email ? `<p class="text-sm text-gray-600 mb-1">✉️ ${escapeHtml(speaker.email)}</p>` : ''}
         ${speaker.topic ? `<p class="text-sm text-gray-600 mb-1">📚 ${escapeHtml(speaker.topic)}</p>` : ''}
         ${speaker.rotarian ? `<p class="text-sm text-blue-600 mb-1">⚙️ Rotarian</p>` : ''}
-        ${speaker.email ? `<p class="text-sm text-gray-600 mb-1">✉️ ${escapeHtml(speaker.email)}</p>` : ''}
-        ${speaker.phone ? `<p class="text-sm text-gray-600 mb-1">📞 ${escapeHtml(speaker.phone)}</p>` : ''}
+        ${speaker.links && speaker.links.length > 0 ? speaker.links.map(link =>
+            `<p class="text-sm text-gray-600 mb-1">🔗 <a href="${escapeHtml(link)}" target="_blank" class="text-rotary-azure hover:underline">${escapeHtml(link.replace(/^https?:\/\/(www\.)?/, '').split('/')[0])}</a></p>`
+        ).join('') : ''}
         ${speaker.scheduledDate ? `<p class="text-sm text-gray-600 mb-1">📅 ${formatDate(speaker.scheduledDate)}</p>` : ''}
         ${speaker.notes ? `<p class="text-xs text-gray-500 mt-2">📝 ${escapeHtml(speaker.notes.substring(0, 50))}${speaker.notes.length > 50 ? '...' : ''}</p>` : ''}
     `;
@@ -257,6 +268,11 @@ function renderSpreadsheet() {
                 <input type="date" class="date-input px-2 py-1 border rounded" data-field="scheduledDate" data-id="${speaker.id}" value="${speaker.scheduledDate || ''}">
             </td>
             <td class="px-4 py-3 editable-cell" contenteditable="true" data-field="notes" data-id="${speaker.id}">${escapeHtml(speaker.notes || '')}</td>
+            <td class="px-4 py-3">
+                ${speaker.links && speaker.links.length > 0 ? speaker.links.map(link =>
+                    `<a href="${escapeHtml(link)}" target="_blank" class="text-rotary-azure hover:underline block text-sm">🔗 ${escapeHtml(link.replace(/^https?:\/\/(www\.)?/, '').split('/')[0])}</a>`
+                ).join('') : '<span class="text-gray-400 text-sm">-</span>'}
+            </td>
             <td class="px-4 py-3">
                 <div class="flex space-x-2">
                     <button onclick="editSpeaker(${speaker.id})" class="text-blue-600 hover:text-blue-800">Edit</button>
@@ -395,6 +411,51 @@ function sortSpreadsheet(column) {
     renderSpreadsheet();
 }
 
+// Dynamic link management
+let currentLinks = [];
+
+function addLinkInput() {
+    const container = document.getElementById('linksContainer');
+    const linkIndex = container.querySelectorAll('.link-input-group').length;
+
+    const linkGroup = document.createElement('div');
+    linkGroup.className = 'link-input-group flex items-center space-x-2 mt-2';
+    linkGroup.innerHTML = `
+        <input type="url" class="link-input flex-1 px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-rotary-azure font-body" placeholder="https://...">
+        <button type="button" onclick="removeLinkInput(this)" class="text-red-600 hover:text-red-800 px-2">
+            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
+            </svg>
+        </button>
+    `;
+
+    container.appendChild(linkGroup);
+    linkGroup.querySelector('.link-input').focus();
+}
+
+function removeLinkInput(button) {
+    button.closest('.link-input-group').remove();
+    updateAddLinkButton();
+}
+
+function updateAddLinkButton() {
+    const container = document.getElementById('linksContainer');
+    const inputs = container.querySelectorAll('.link-input');
+    const addButton = document.getElementById('addLinkBtn');
+
+    // Show add button if there are less than 5 links and the last input has a value
+    if (inputs.length < 5) {
+        const lastInput = inputs[inputs.length - 1];
+        if (!lastInput || lastInput.value.trim()) {
+            addButton.style.display = 'inline-flex';
+        } else {
+            addButton.style.display = 'none';
+        }
+    } else {
+        addButton.style.display = 'none';
+    }
+}
+
 // Modal Functions
 function openModal(speakerId = null, defaultStatus = 'Ideas') {
     const modal = document.getElementById('speakerModal');
@@ -403,6 +464,17 @@ function openModal(speakerId = null, defaultStatus = 'Ideas') {
     const statusField = document.getElementById('statusField');
 
     form.reset();
+
+    // Reset links container
+    const linksContainer = document.getElementById('linksContainer');
+    linksContainer.innerHTML = `
+        <div class="link-input-group flex items-center space-x-2">
+            <input type="url" class="link-input flex-1 px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-rotary-azure font-body" placeholder="https://...">
+        </div>
+    `;
+
+    // Update add link button visibility
+    updateAddLinkButton();
 
     if (speakerId) {
         const speaker = speakers.find(s => s.id === speakerId);
@@ -421,6 +493,27 @@ function openModal(speakerId = null, defaultStatus = 'Ideas') {
             document.getElementById('speakerNotes').value = speaker.notes || '';
             document.getElementById('speakerStatus').value = speaker.status;
             statusField.classList.remove('hidden');
+
+            // Load existing links
+            if (speaker.links && speaker.links.length > 0) {
+                const linksContainer = document.getElementById('linksContainer');
+                linksContainer.innerHTML = '';
+                speaker.links.forEach((link, index) => {
+                    const linkGroup = document.createElement('div');
+                    linkGroup.className = 'link-input-group flex items-center space-x-2' + (index > 0 ? ' mt-2' : '');
+                    linkGroup.innerHTML = `
+                        <input type="url" class="link-input flex-1 px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-rotary-azure font-body" value="${escapeHtml(link)}" placeholder="https://...">
+                        ${index > 0 ? `<button type="button" onclick="removeLinkInput(this)" class="text-red-600 hover:text-red-800 px-2">
+                            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
+                            </svg>
+                        </button>` : ''}
+                    `;
+                    linksContainer.appendChild(linkGroup);
+                });
+            }
+
+            updateAddLinkButton();
         }
     } else {
         title.textContent = 'ADD SPEAKER';
@@ -444,6 +537,17 @@ function handleFormSubmit(e) {
     e.preventDefault();
 
     const speakerId = document.getElementById('speakerId').value;
+
+    // Collect links
+    const linkInputs = document.querySelectorAll('.link-input');
+    const links = [];
+    linkInputs.forEach(input => {
+        const value = input.value.trim();
+        if (value) {
+            links.push(value);
+        }
+    });
+
     const formData = {
         name: document.getElementById('speakerName').value,
         email: document.getElementById('speakerEmail').value,
@@ -455,7 +559,8 @@ function handleFormSubmit(e) {
         dateContacted: document.getElementById('speakerDateContacted').value,
         scheduledDate: document.getElementById('speakerScheduledDate').value,
         notes: document.getElementById('speakerNotes').value,
-        status: document.getElementById('speakerStatus').value
+        status: document.getElementById('speakerStatus').value,
+        links: links
     };
 
     if (speakerId) {
@@ -492,7 +597,7 @@ function deleteSpeaker(id) {
 
 // CSV Import/Export
 function exportToCSV() {
-    const headers = ['Name', 'Email', 'Organization', 'Job Title', 'Phone', 'Topic', 'Rotarian', 'Status', 'Date Contacted', 'Scheduled Date', 'Notes'];
+    const headers = ['Name', 'Email', 'Organization', 'Job Title', 'Phone', 'Topic', 'Rotarian', 'Status', 'Date Contacted', 'Scheduled Date', 'Notes', 'Links'];
     const rows = speakers.map(s => [
         s.name,
         s.email || '',
@@ -504,7 +609,8 @@ function exportToCSV() {
         s.status,
         s.dateContacted || '',
         s.scheduledDate || '',
-        s.notes || ''
+        s.notes || '',
+        (s.links || []).join('; ')
     ]);
 
     let csv = headers.join(',') + '\n';
@@ -563,8 +669,15 @@ function importFromCSV(e) {
                     status: getValue(row, headers, ['status', 'stage']) || 'Ideas',
                     dateContacted: getValue(row, headers, ['date contacted', 'contacted', 'contact date']),
                     scheduledDate: getValue(row, headers, ['scheduled date', 'scheduled', 'date scheduled']),
-                    notes: getValue(row, headers, ['notes', 'comments', 'note'])
+                    notes: getValue(row, headers, ['notes', 'comments', 'note']),
+                    links: []
                 };
+
+                // Parse links if present
+                const linksValue = getValue(row, headers, ['links', 'urls', 'websites']);
+                if (linksValue) {
+                    speaker.links = linksValue.split(/[;,]/).map(l => l.trim()).filter(l => l);
+                }
 
                 // Validate status
                 const validStatuses = ['Ideas', 'Approached', 'Agreed', 'Scheduled', 'Spoken', 'Dropped'];
