@@ -12,16 +12,24 @@
 
 /* Kanban card styles */
 .speaker-card {
-    @apply bg-white p-3 rounded-lg shadow-md border border-gray-300 cursor-move hover:shadow-lg transition-all duration-200;
-    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+    @apply bg-white p-4 rounded-lg shadow-sm border border-gray-200 cursor-move hover:shadow-md transition-all duration-200;
 }
 
 .speaker-card:hover {
     border-color: var(--rotary-azure);
+    box-shadow: 0 4px 12px rgba(0, 93, 170, 0.08);
 }
 
 .speaker-card a {
     color: var(--rotary-azure);
+}
+
+.speaker-card h3 {
+    @apply text-base font-semibold text-gray-900 mb-1;
+}
+
+.speaker-card p {
+    @apply text-sm text-gray-600 leading-relaxed;
 }
 
 .speaker-card.dragging {
@@ -58,7 +66,6 @@ th[data-sort].sorted-desc .sort-indicator::after {
 /* Status badges */
 .status-badge {
     @apply px-2 py-1 rounded-full text-xs font-medium;
-    font-family: Arial, sans-serif;
 }
 
 .status-badge.Ideas {

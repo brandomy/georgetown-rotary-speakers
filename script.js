@@ -21,6 +21,86 @@ function loadData() {
         speakers = JSON.parse(savedData);
         nextId = Math.max(...speakers.map(s => s.id), 0) + 1;
     }
+
+    // Check for demo mode in URL
+    if (window.location.search.includes('demo=true') && speakers.length === 0) {
+        loadDemoData();
+    }
+}
+
+// Load demo data for testing
+function loadDemoData() {
+    speakers = [
+        {
+            id: 1,
+            name: "Sarah Johnson",
+            organization: "Tech Innovations Inc",
+            jobTitle: "CEO",
+            email: "sarah@techinnovations.com",
+            phone: "555-0101",
+            topic: "AI in Healthcare",
+            status: "Scheduled",
+            scheduledDate: "2024-11-15",
+            rotarian: false,
+            links: ["https://linkedin.com/in/sarahjohnson", "https://techinnovations.com"],
+            notes: "Expert in medical AI applications"
+        },
+        {
+            id: 2,
+            name: "Michael Chen",
+            organization: "Green Energy Solutions",
+            jobTitle: "Director",
+            email: "mchen@greenenergy.com",
+            phone: "555-0102",
+            topic: "Sustainable Energy Future",
+            status: "Agreed",
+            rotarian: true,
+            links: ["https://linkedin.com/in/michaelchen"],
+            notes: "Rotarian from Austin club"
+        },
+        {
+            id: 3,
+            name: "Dr. Emily Parker",
+            organization: "Georgetown University",
+            jobTitle: "Professor of Economics",
+            email: "eparker@georgetown.edu",
+            phone: "555-0103",
+            topic: "Local Economic Development",
+            status: "Approached",
+            rotarian: false,
+            links: ["https://georgetown.edu/faculty/eparker"],
+            notes: "Recommended by John Smith"
+        },
+        {
+            id: 4,
+            name: "James Wilson",
+            organization: "Community Foundation",
+            jobTitle: "Executive Director",
+            email: "jwilson@communityfdn.org",
+            phone: "555-0104",
+            topic: "Philanthropy in Action",
+            status: "Ideas",
+            rotarian: false,
+            links: [],
+            notes: "Potential speaker for charity drive event"
+        },
+        {
+            id: 5,
+            name: "Lisa Martinez",
+            organization: "Austin Medical Center",
+            jobTitle: "Chief of Staff",
+            email: "lmartinez@austinmed.com",
+            phone: "555-0105",
+            topic: "Public Health Initiatives",
+            status: "Spoken",
+            scheduledDate: "2024-09-10",
+            rotarian: true,
+            links: ["https://austinmed.com/staff/martinez"],
+            notes: "Excellent presentation on vaccines"
+        }
+    ];
+    nextId = 6;
+    saveData();
 }
 
 // Save data to localStorage
@@ -136,32 +216,34 @@ function createSpeakerCard(speaker) {
     card.classList.add(statusColors[speaker.status] || 'border-gray-300');
 
     card.innerHTML = `
-        <div class="flex justify-between items-start mb-2">
-            <h3 class="font-semibold text-gray-900">${escapeHtml(speaker.name)}</h3>
+        <div class="flex justify-between items-start mb-3">
+            <h3>${escapeHtml(speaker.name)}</h3>
             <div class="flex space-x-1">
-                <button onclick="editSpeaker(${speaker.id})" class="text-blue-600 hover:text-blue-800">
+                <button onclick="editSpeaker(${speaker.id})" class="text-gray-400 hover:text-rotary-azure transition-colors">
                     <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/>
                     </svg>
                 </button>
-                <button onclick="deleteSpeaker(${speaker.id})" class="text-red-600 hover:text-red-800">
+                <button onclick="deleteSpeaker(${speaker.id})" class="text-gray-400 hover:text-red-600 transition-colors">
                     <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/>
                     </svg>
                 </button>
             </div>
         </div>
-        ${speaker.organization ? `<p class="text-sm text-gray-600 mb-1">🏢 ${escapeHtml(speaker.organization)}</p>` : ''}
-        ${speaker.jobTitle ? `<p class="text-sm text-gray-600 mb-1">💼 ${escapeHtml(speaker.jobTitle)}</p>` : ''}
-        ${speaker.phone ? `<p class="text-sm text-gray-600 mb-1">📞 ${escapeHtml(speaker.phone)}</p>` : ''}
-        ${speaker.email ? `<p class="text-sm text-gray-600 mb-1">✉️ ${escapeHtml(speaker.email)}</p>` : ''}
-        ${speaker.topic ? `<p class="text-sm text-gray-600 mb-1">📚 ${escapeHtml(speaker.topic)}</p>` : ''}
-        ${speaker.rotarian ? `<p class="text-sm text-blue-600 mb-1">⚙️ Rotarian</p>` : ''}
-        ${speaker.links && speaker.links.length > 0 ? speaker.links.map(link =>
-            `<p class="text-sm text-gray-600 mb-1">🔗 <a href="${escapeHtml(link)}" target="_blank" class="text-rotary-azure hover:underline">${escapeHtml(link.replace(/^https?:\/\/(www\.)?/, '').split('/')[0])}</a></p>`
-        ).join('') : ''}
-        ${speaker.scheduledDate ? `<p class="text-sm text-gray-600 mb-1">📅 ${formatDate(speaker.scheduledDate)}</p>` : ''}
-        ${speaker.notes ? `<p class="text-xs text-gray-500 mt-2">📝 ${escapeHtml(speaker.notes.substring(0, 50))}${speaker.notes.length > 50 ? '...' : ''}</p>` : ''}
+        <div class="space-y-1">
+            ${speaker.organization ? `<p>🏢 ${escapeHtml(speaker.organization)}</p>` : ''}
+            ${speaker.jobTitle ? `<p>💼 ${escapeHtml(speaker.jobTitle)}</p>` : ''}
+            ${speaker.phone ? `<p>📞 ${escapeHtml(speaker.phone)}</p>` : ''}
+            ${speaker.email ? `<p>✉️ ${escapeHtml(speaker.email)}</p>` : ''}
+            ${speaker.topic ? `<p>📚 ${escapeHtml(speaker.topic)}</p>` : ''}
+            ${speaker.rotarian ? `<p class="text-rotary-azure font-medium">⚙️ Rotarian</p>` : ''}
+            ${speaker.links && speaker.links.length > 0 ? speaker.links.map(link =>
+                `<p>🔗 <a href="${escapeHtml(link)}" target="_blank" class="hover:underline">${escapeHtml(link.replace(/^https?:\/\/(www\.)?/, '').split('/')[0])}</a></p>`
+            ).join('') : ''}
+            ${speaker.scheduledDate ? `<p>📅 ${formatDate(speaker.scheduledDate)}</p>` : ''}
+        </div>
+        ${speaker.notes ? `<p class="text-xs text-gray-500 mt-3 pt-3 border-t border-gray-100">📝 ${escapeHtml(speaker.notes.substring(0, 50))}${speaker.notes.length > 50 ? '...' : ''}</p>` : ''}
     `;
 
     // Add drag event listeners
@@ -421,7 +503,7 @@ function addLinkInput() {
     const linkGroup = document.createElement('div');
     linkGroup.className = 'link-input-group flex items-center space-x-2 mt-2';
     linkGroup.innerHTML = `
-        <input type="url" class="link-input flex-1 px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-rotary-azure font-body" placeholder="https://...">
+        <input type="url" class="link-input flex-1 px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-rotary-azure" placeholder="https://...">
         <button type="button" onclick="removeLinkInput(this)" class="text-red-600 hover:text-red-800 px-2">
             <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
@@ -469,7 +551,7 @@ function openModal(speakerId = null, defaultStatus = 'Ideas') {
     const linksContainer = document.getElementById('linksContainer');
     linksContainer.innerHTML = `
         <div class="link-input-group flex items-center space-x-2">
-            <input type="url" class="link-input flex-1 px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-rotary-azure font-body" placeholder="https://...">
+            <input type="url" class="link-input flex-1 px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-rotary-azure" placeholder="https://...">
         </div>
     `;
 
@@ -502,7 +584,7 @@ function openModal(speakerId = null, defaultStatus = 'Ideas') {
                     const linkGroup = document.createElement('div');
                     linkGroup.className = 'link-input-group flex items-center space-x-2' + (index > 0 ? ' mt-2' : '');
                     linkGroup.innerHTML = `
-                        <input type="url" class="link-input flex-1 px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-rotary-azure font-body" value="${escapeHtml(link)}" placeholder="https://...">
+                        <input type="url" class="link-input flex-1 px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-rotary-azure" value="${escapeHtml(link)}" placeholder="https://...">
                         ${index > 0 ? `<button type="button" onclick="removeLinkInput(this)" class="text-red-600 hover:text-red-800 px-2">
                             <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
