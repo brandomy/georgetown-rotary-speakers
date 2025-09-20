@@ -146,6 +146,7 @@ function createSpeakerCard(speaker) {
         </div>
         ${speaker.jobTitle || speaker.organization ? `<p class="text-sm text-gray-600 mb-1">🏢 ${escapeHtml(speaker.jobTitle || '')}${speaker.jobTitle && speaker.organization ? ' at ' : ''}${escapeHtml(speaker.organization || '')}</p>` : ''}
         ${speaker.topic ? `<p class="text-sm text-gray-600 mb-1">📚 ${escapeHtml(speaker.topic)}</p>` : ''}
+        ${speaker.rotarian ? `<p class="text-sm text-blue-600 mb-1">⚙️ Rotarian</p>` : ''}
         ${speaker.email ? `<p class="text-sm text-gray-600 mb-1">✉️ ${escapeHtml(speaker.email)}</p>` : ''}
         ${speaker.phone ? `<p class="text-sm text-gray-600 mb-1">📞 ${escapeHtml(speaker.phone)}</p>` : ''}
         ${speaker.scheduledDate ? `<p class="text-sm text-gray-600 mb-1">📅 ${formatDate(speaker.scheduledDate)}</p>` : ''}
@@ -237,6 +238,9 @@ function renderSpreadsheet() {
             <td class="px-4 py-3 editable-cell" contenteditable="true" data-field="phone" data-id="${speaker.id}">${escapeHtml(speaker.phone || '')}</td>
             <td class="px-4 py-3 editable-cell" contenteditable="true" data-field="topic" data-id="${speaker.id}">${escapeHtml(speaker.topic || '')}</td>
             <td class="px-4 py-3">
+                <input type="checkbox" class="rotarian-checkbox rounded border-gray-300 text-blue-600" data-id="${speaker.id}" ${speaker.rotarian ? 'checked' : ''}>
+            </td>
+            <td class="px-4 py-3">
                 <select class="status-select px-2 py-1 border rounded" data-id="${speaker.id}">
                     <option value="Ideas" ${speaker.status === 'Ideas' ? 'selected' : ''}>Ideas</option>
                     <option value="Approached" ${speaker.status === 'Approached' ? 'selected' : ''}>Approached</option>
@@ -281,6 +285,10 @@ function renderSpreadsheet() {
     document.querySelectorAll('.date-input').forEach(input => {
         input.addEventListener('change', handleDateChange);
     });
+
+    document.querySelectorAll('.rotarian-checkbox').forEach(checkbox => {
+        checkbox.addEventListener('change', handleRotarianChange);
+    });
 }
 
 function handleCellEdit(e) {
@@ -311,6 +319,15 @@ function handleDateChange(e) {
     const speaker = speakers.find(s => s.id === speakerId);
     if (speaker) {
         speaker[field] = e.target.value;
+        saveData();
+    }
+}
+
+function handleRotarianChange(e) {
+    const speakerId = parseInt(e.target.dataset.id);
+    const speaker = speakers.find(s => s.id === speakerId);
+    if (speaker) {
+        speaker.rotarian = e.target.checked;
         saveData();
     }
 }
@@ -398,6 +415,7 @@ function openModal(speakerId = null, defaultStatus = 'Ideas') {
             document.getElementById('speakerJobTitle').value = speaker.jobTitle || '';
             document.getElementById('speakerPhone').value = speaker.phone || '';
             document.getElementById('speakerTopic').value = speaker.topic || '';
+            document.getElementById('speakerRotarian').checked = speaker.rotarian || false;
             document.getElementById('speakerDateContacted').value = speaker.dateContacted || '';
             document.getElementById('speakerScheduledDate').value = speaker.scheduledDate || '';
             document.getElementById('speakerNotes').value = speaker.notes || '';
@@ -433,6 +451,7 @@ function handleFormSubmit(e) {
         jobTitle: document.getElementById('speakerJobTitle').value,
         phone: document.getElementById('speakerPhone').value,
         topic: document.getElementById('speakerTopic').value,
+        rotarian: document.getElementById('speakerRotarian').checked,
         dateContacted: document.getElementById('speakerDateContacted').value,
         scheduledDate: document.getElementById('speakerScheduledDate').value,
         notes: document.getElementById('speakerNotes').value,
@@ -473,7 +492,7 @@ function deleteSpeaker(id) {
 
 // CSV Import/Export
 function exportToCSV() {
-    const headers = ['Name', 'Email', 'Organization', 'Job Title', 'Phone', 'Topic', 'Status', 'Date Contacted', 'Scheduled Date', 'Notes'];
+    const headers = ['Name', 'Email', 'Organization', 'Job Title', 'Phone', 'Topic', 'Rotarian', 'Status', 'Date Contacted', 'Scheduled Date', 'Notes'];
     const rows = speakers.map(s => [
         s.name,
         s.email || '',
@@ -481,6 +500,7 @@ function exportToCSV() {
         s.jobTitle || '',
         s.phone || '',
         s.topic || '',
+        s.rotarian ? 'Yes' : 'No',
         s.status,
         s.dateContacted || '',
         s.scheduledDate || '',
@@ -539,6 +559,7 @@ function importFromCSV(e) {
                     jobTitle: getValue(row, headers, ['job title', 'title', 'position', 'role']),
                     phone: getValue(row, headers, ['phone', 'telephone', 'tel']),
                     topic: getValue(row, headers, ['topic', 'expertise', 'subject']),
+                    rotarian: ['yes', 'y', 'true', '1'].includes(getValue(row, headers, ['rotarian', 'rotary member']).toLowerCase()),
                     status: getValue(row, headers, ['status', 'stage']) || 'Ideas',
                     dateContacted: getValue(row, headers, ['date contacted', 'contacted', 'contact date']),
                     scheduledDate: getValue(row, headers, ['scheduled date', 'scheduled', 'date scheduled']),
