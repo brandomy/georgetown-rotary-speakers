@@ -144,6 +144,7 @@ function createSpeakerCard(speaker) {
                 </button>
             </div>
         </div>
+        ${speaker.jobTitle || speaker.organization ? `<p class="text-sm text-gray-600 mb-1">🏢 ${escapeHtml(speaker.jobTitle || '')}${speaker.jobTitle && speaker.organization ? ' at ' : ''}${escapeHtml(speaker.organization || '')}</p>` : ''}
         ${speaker.topic ? `<p class="text-sm text-gray-600 mb-1">📚 ${escapeHtml(speaker.topic)}</p>` : ''}
         ${speaker.email ? `<p class="text-sm text-gray-600 mb-1">✉️ ${escapeHtml(speaker.email)}</p>` : ''}
         ${speaker.phone ? `<p class="text-sm text-gray-600 mb-1">📞 ${escapeHtml(speaker.phone)}</p>` : ''}
@@ -231,6 +232,8 @@ function renderSpreadsheet() {
         row.innerHTML = `
             <td class="px-4 py-3 editable-cell" contenteditable="true" data-field="name" data-id="${speaker.id}">${escapeHtml(speaker.name)}</td>
             <td class="px-4 py-3 editable-cell" contenteditable="true" data-field="email" data-id="${speaker.id}">${escapeHtml(speaker.email || '')}</td>
+            <td class="px-4 py-3 editable-cell" contenteditable="true" data-field="organization" data-id="${speaker.id}">${escapeHtml(speaker.organization || '')}</td>
+            <td class="px-4 py-3 editable-cell" contenteditable="true" data-field="jobTitle" data-id="${speaker.id}">${escapeHtml(speaker.jobTitle || '')}</td>
             <td class="px-4 py-3 editable-cell" contenteditable="true" data-field="phone" data-id="${speaker.id}">${escapeHtml(speaker.phone || '')}</td>
             <td class="px-4 py-3 editable-cell" contenteditable="true" data-field="topic" data-id="${speaker.id}">${escapeHtml(speaker.topic || '')}</td>
             <td class="px-4 py-3">
@@ -321,6 +324,8 @@ function getFilteredSpeakers() {
         filtered = filtered.filter(s =>
             s.name.toLowerCase().includes(searchTerm) ||
             (s.email && s.email.toLowerCase().includes(searchTerm)) ||
+            (s.organization && s.organization.toLowerCase().includes(searchTerm)) ||
+            (s.jobTitle && s.jobTitle.toLowerCase().includes(searchTerm)) ||
             (s.topic && s.topic.toLowerCase().includes(searchTerm)) ||
             (s.notes && s.notes.toLowerCase().includes(searchTerm))
         );
@@ -389,6 +394,8 @@ function openModal(speakerId = null, defaultStatus = 'Ideas') {
             document.getElementById('speakerId').value = speaker.id;
             document.getElementById('speakerName').value = speaker.name;
             document.getElementById('speakerEmail').value = speaker.email || '';
+            document.getElementById('speakerOrganization').value = speaker.organization || '';
+            document.getElementById('speakerJobTitle').value = speaker.jobTitle || '';
             document.getElementById('speakerPhone').value = speaker.phone || '';
             document.getElementById('speakerTopic').value = speaker.topic || '';
             document.getElementById('speakerDateContacted').value = speaker.dateContacted || '';
@@ -422,6 +429,8 @@ function handleFormSubmit(e) {
     const formData = {
         name: document.getElementById('speakerName').value,
         email: document.getElementById('speakerEmail').value,
+        organization: document.getElementById('speakerOrganization').value,
+        jobTitle: document.getElementById('speakerJobTitle').value,
         phone: document.getElementById('speakerPhone').value,
         topic: document.getElementById('speakerTopic').value,
         dateContacted: document.getElementById('speakerDateContacted').value,
@@ -464,10 +473,12 @@ function deleteSpeaker(id) {
 
 // CSV Import/Export
 function exportToCSV() {
-    const headers = ['Name', 'Email', 'Phone', 'Topic', 'Status', 'Date Contacted', 'Scheduled Date', 'Notes'];
+    const headers = ['Name', 'Email', 'Organization', 'Job Title', 'Phone', 'Topic', 'Status', 'Date Contacted', 'Scheduled Date', 'Notes'];
     const rows = speakers.map(s => [
         s.name,
         s.email || '',
+        s.organization || '',
+        s.jobTitle || '',
         s.phone || '',
         s.topic || '',
         s.status,
@@ -524,6 +535,8 @@ function importFromCSV(e) {
                     id: nextId++,
                     name: row[nameIndex].trim(),
                     email: getValue(row, headers, ['email', 'e-mail']),
+                    organization: getValue(row, headers, ['organization', 'company', 'org']),
+                    jobTitle: getValue(row, headers, ['job title', 'title', 'position', 'role']),
                     phone: getValue(row, headers, ['phone', 'telephone', 'tel']),
                     topic: getValue(row, headers, ['topic', 'expertise', 'subject']),
                     status: getValue(row, headers, ['status', 'stage']) || 'Ideas',

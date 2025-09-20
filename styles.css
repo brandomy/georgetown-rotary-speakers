@@ -2,7 +2,8 @@
 
 /* Kanban card styles */
 .speaker-card {
-    @apply bg-white p-3 rounded-lg shadow-sm border border-gray-200 cursor-move hover:shadow-md transition-shadow;
+    @apply bg-white p-3 rounded-lg shadow-md border border-gray-300 cursor-move hover:shadow-lg transition-all duration-200;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
 }
 
 .speaker-card.dragging {
