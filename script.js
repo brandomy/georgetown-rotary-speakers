@@ -7,12 +7,36 @@ let nextId = 1;
 let draggedElement = null;
 let currentEditingCell = null;
 
+// Sync System
+let syncConfig = null;
+let syncEngine = null;
+let backupSystem = null;
+let syncUI = null;
+
 // Initialize on page load
 document.addEventListener('DOMContentLoaded', () => {
     loadData();
     initializeEventListeners();
     renderView();
 });
+
+// Initialize sync system
+function initializeSyncSystem() {
+    try {
+        // Initialize sync components
+        syncConfig = new GitHubSyncConfig();
+        syncEngine = new GitHubSyncEngine(syncConfig);
+        backupSystem = new BackupSystem(syncConfig, syncEngine);
+        syncUI = new SyncUI(syncEngine, syncConfig);
+
+        console.log('Sync system initialized successfully');
+    } catch (error) {
+        console.error('Failed to initialize sync system:', error);
+    }
+}
+
+// Make initialization function globally available
+window.initializeSyncSystem = initializeSyncSystem;
 
 // Load data from localStorage
 function loadData() {
@@ -106,6 +130,12 @@ function loadDemoData() {
 // Save data to localStorage
 function saveData() {
     localStorage.setItem('rotarySpeakers', JSON.stringify(speakers));
+    localStorage.setItem('rotarySpeakersLastModified', new Date().toISOString());
+
+    // Trigger sync if available
+    if (syncEngine) {
+        syncEngine.triggerDataChange();
+    }
 }
 
 // Initialize all event listeners
@@ -781,6 +811,12 @@ function importFromCSV(e) {
         } else {
             alert('We couldn\'t find any valid speakers in the CSV file');
         }
+
+        // Clear sync queue if sync is enabled
+        if (syncEngine) {
+            syncEngine.triggerDataChange();
+        }
+        }
     };
 
     reader.readAsText(file);
@@ -846,3 +882,56 @@ function formatDate(dateString) {
     const date = new Date(dateString);
     return date.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
 }
+
+// Enhanced data loading with sync support
+function loadDataFromSync(syncData) {
+    if (syncData && Array.isArray(syncData.speakers)) {
+        speakers = syncData.speakers;
+        nextId = Math.max(...speakers.map(s => s.id), 0) + 1;
+
+        // Update local storage
+        localStorage.setItem('rotarySpeakers', JSON.stringify(speakers));
+        if (syncData.lastModified) {
+            localStorage.setItem('rotarySpeakersLastModified', syncData.lastModified);
+        }
+        if (syncData.version) {
+            localStorage.setItem('rotarySpeakersVersion', syncData.version.toString());
+        }
+
+        // Re-render views
+        renderView();
+    }
+}
+
+// Emergency backup function
+function createEmergencyBackup() {
+    if (backupSystem) {
+        return backupSystem.createEmergencyBackup();
+    } else {
+        // Fallback manual backup
+        const emergencyData = {
+            timestamp: new Date().toISOString(),
+            speakers: speakers,
+            metadata: {
+                userAgent: navigator.userAgent,
+                origin: window.location.origin
+            }
+        };
+
+        const blob = new Blob([JSON.stringify(emergencyData, null, 2)], { type: 'application/json' });
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = `emergency-backup-${new Date().toISOString().split('T')[0]}.json`;
+        a.click();
+        URL.revokeObjectURL(url);
+
+        return emergencyData;
+    }
+}
+
+// Global functions for sync system
+window.loadData = loadData;
+window.renderView = renderView;
+window.loadDataFromSync = loadDataFromSync;
+window.createEmergencyBackup = createEmergencyBackup;

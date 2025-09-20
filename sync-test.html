@@ -1,0 +1,338 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sync System Test Page</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        'rotary-azure': '#005daa',
+                        'rotary-gold': '#febd11'
+                    }
+                }
+            }
+        }
+    </script>
+</head>
+<body class="bg-gray-50 p-6">
+    <div class="max-w-4xl mx-auto">
+        <h1 class="text-2xl font-bold mb-6">GitHub Sync System Test Page</h1>
+
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <!-- Configuration Test -->
+            <div class="bg-white p-4 rounded-lg shadow">
+                <h2 class="text-lg font-semibold mb-3">Configuration Test</h2>
+                <div class="space-y-3">
+                    <button onclick="testConfig()" class="bg-rotary-azure text-white px-4 py-2 rounded">Test Config Load</button>
+                    <button onclick="testTokenValidation()" class="bg-blue-500 text-white px-4 py-2 rounded">Test Token Validation</button>
+                    <div id="configResults" class="text-sm bg-gray-100 p-2 rounded"></div>
+                </div>
+            </div>
+
+            <!-- Sync Engine Test -->
+            <div class="bg-white p-4 rounded-lg shadow">
+                <h2 class="text-lg font-semibold mb-3">Sync Engine Test</h2>
+                <div class="space-y-3">
+                    <button onclick="testSyncEngine()" class="bg-green-500 text-white px-4 py-2 rounded">Test Sync Engine</button>
+                    <button onclick="simulateConflict()" class="bg-yellow-500 text-white px-4 py-2 rounded">Simulate Conflict</button>
+                    <div id="syncResults" class="text-sm bg-gray-100 p-2 rounded"></div>
+                </div>
+            </div>
+
+            <!-- Backup System Test -->
+            <div class="bg-white p-4 rounded-lg shadow">
+                <h2 class="text-lg font-semibold mb-3">Backup System Test</h2>
+                <div class="space-y-3">
+                    <button onclick="testBackups()" class="bg-purple-500 text-white px-4 py-2 rounded">Test Backup Creation</button>
+                    <button onclick="testIntegrity()" class="bg-red-500 text-white px-4 py-2 rounded">Test Data Integrity</button>
+                    <div id="backupResults" class="text-sm bg-gray-100 p-2 rounded"></div>
+                </div>
+            </div>
+
+            <!-- UI Components Test -->
+            <div class="bg-white p-4 rounded-lg shadow">
+                <h2 class="text-lg font-semibold mb-3">UI Components Test</h2>
+                <div class="space-y-3">
+                    <button onclick="testSyncUI()" class="bg-indigo-500 text-white px-4 py-2 rounded">Test Sync UI</button>
+                    <button onclick="showSetupModal()" class="bg-pink-500 text-white px-4 py-2 rounded">Show Setup Modal</button>
+                    <div id="uiResults" class="text-sm bg-gray-100 p-2 rounded"></div>
+                </div>
+            </div>
+        </div>
+
+        <!-- System Status -->
+        <div class="mt-6 bg-white p-4 rounded-lg shadow">
+            <h2 class="text-lg font-semibold mb-3">System Status</h2>
+            <div id="systemStatus" class="space-y-2"></div>
+            <button onclick="refreshStatus()" class="mt-3 bg-gray-500 text-white px-4 py-2 rounded">Refresh Status</button>
+        </div>
+
+        <!-- Test Data -->
+        <div class="mt-6 bg-white p-4 rounded-lg shadow">
+            <h2 class="text-lg font-semibold mb-3">Test Data Management</h2>
+            <div class="space-y-3">
+                <button onclick="loadTestData()" class="bg-rotary-azure text-white px-4 py-2 rounded">Load Test Data</button>
+                <button onclick="clearAllData()" class="bg-red-600 text-white px-4 py-2 rounded">Clear All Data</button>
+                <button onclick="exportTestResults()" class="bg-green-600 text-white px-4 py-2 rounded">Export Test Results</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Load Sync System -->
+    <script src="sync-config.js"></script>
+    <script src="sync-engine.js"></script>
+    <script src="backup-system.js"></script>
+    <script src="sync-ui.js"></script>
+
+    <script>
+        // Test Results Storage
+        let testResults = {};
+
+        // Initialize sync system for testing
+        let syncConfig, syncEngine, backupSystem, syncUI;
+
+        document.addEventListener('DOMContentLoaded', () => {
+            try {
+                syncConfig = new GitHubSyncConfig();
+                syncEngine = new GitHubSyncEngine(syncConfig);
+                backupSystem = new BackupSystem(syncConfig, syncEngine);
+                // Note: SyncUI requires DOM elements that don't exist on this test page
+
+                log('System initialized successfully');
+                refreshStatus();
+            } catch (error) {
+                log('Failed to initialize system: ' + error.message);
+            }
+        });
+
+        function log(message) {
+            console.log(message);
+        }
+
+        function updateResults(elementId, message, success = true) {
+            const element = document.getElementById(elementId);
+            element.innerHTML += `<div class="${success ? 'text-green-600' : 'text-red-600'}">${new Date().toLocaleTimeString()}: ${message}</div>`;
+            element.scrollTop = element.scrollHeight;
+        }
+
+        // Configuration Tests
+        function testConfig() {
+            try {
+                const config = syncConfig.getConfig();
+                updateResults('configResults', `Config loaded: ${JSON.stringify(config, null, 2)}`);
+                testResults.config = { success: true, config };
+            } catch (error) {
+                updateResults('configResults', `Config test failed: ${error.message}`, false);
+                testResults.config = { success: false, error: error.message };
+            }
+        }
+
+        async function testTokenValidation() {
+            const token = prompt('Enter GitHub token to test:');
+            if (!token) {
+                updateResults('configResults', 'Token validation cancelled', false);
+                return;
+            }
+
+            try {
+                const valid = await syncConfig.validateGitHubToken(token);
+                updateResults('configResults', `Token validation: ${valid ? 'VALID' : 'INVALID'}`);
+                testResults.tokenValidation = { success: true, valid };
+            } catch (error) {
+                updateResults('configResults', `Token validation failed: ${error.message}`, false);
+                testResults.tokenValidation = { success: false, error: error.message };
+            }
+        }
+
+        // Sync Engine Tests
+        function testSyncEngine() {
+            try {
+                const status = syncEngine.getStatus();
+                updateResults('syncResults', `Sync status: ${JSON.stringify(status, null, 2)}`);
+
+                // Test event system
+                syncEngine.on('test', (data) => {
+                    updateResults('syncResults', `Event system working: ${data.message}`);
+                });
+                syncEngine.emit('test', { message: 'Test event' });
+
+                testResults.syncEngine = { success: true, status };
+            } catch (error) {
+                updateResults('syncResults', `Sync engine test failed: ${error.message}`, false);
+                testResults.syncEngine = { success: false, error: error.message };
+            }
+        }
+
+        function simulateConflict() {
+            try {
+                // Create mock conflict data
+                const localData = {
+                    version: 1,
+                    lastModified: new Date().toISOString(),
+                    speakers: [{ id: 1, name: 'Local Speaker', email: 'local@test.com' }]
+                };
+
+                const remoteData = {
+                    version: 1,
+                    lastModified: new Date(Date.now() + 1000).toISOString(),
+                    speakers: [{ id: 1, name: 'Remote Speaker', email: 'remote@test.com' }]
+                };
+
+                const mergeResult = syncEngine.mergeData(localData, remoteData);
+                updateResults('syncResults', `Conflict simulation: ${mergeResult.conflicts.length} conflicts detected`);
+                updateResults('syncResults', `Merged data: ${JSON.stringify(mergeResult.data.speakers[0], null, 2)}`);
+
+                testResults.conflictResolution = { success: true, conflicts: mergeResult.conflicts.length };
+            } catch (error) {
+                updateResults('syncResults', `Conflict simulation failed: ${error.message}`, false);
+                testResults.conflictResolution = { success: false, error: error.message };
+            }
+        }
+
+        // Backup System Tests
+        function testBackups() {
+            try {
+                // Create test backup
+                backupSystem.createFullBackup();
+                const status = backupSystem.getBackupStatus();
+                updateResults('backupResults', `Backup created. Status: ${JSON.stringify(status, null, 2)}`);
+                testResults.backup = { success: true, status };
+            } catch (error) {
+                updateResults('backupResults', `Backup test failed: ${error.message}`, false);
+                testResults.backup = { success: false, error: error.message };
+            }
+        }
+
+        function testIntegrity() {
+            try {
+                // Create test data with potential issues
+                const testData = {
+                    speakers: [
+                        { id: 1, name: 'Valid Speaker' },
+                        { id: 1, name: 'Duplicate ID' }, // Duplicate ID
+                        { name: 'Missing ID' }, // Missing ID
+                        { id: 'invalid', name: 'Invalid ID Type' } // Wrong type
+                    ]
+                };
+
+                const corruption = backupSystem.detectDataCorruption(testData);
+                const validation = backupSystem.validateDataStructure(testData);
+
+                updateResults('backupResults', `Corruption detected: ${corruption.length} issues`);
+                updateResults('backupResults', `Validation: ${validation.valid ? 'PASSED' : 'FAILED'} (${validation.errors.length} errors)`);
+
+                testResults.integrity = {
+                    success: true,
+                    corruption: corruption.length,
+                    validation: validation.valid
+                };
+            } catch (error) {
+                updateResults('backupResults', `Integrity test failed: ${error.message}`, false);
+                testResults.integrity = { success: false, error: error.message };
+            }
+        }
+
+        // UI Tests
+        function testSyncUI() {
+            updateResults('uiResults', 'SyncUI requires main application DOM elements');
+            updateResults('uiResults', 'Check main application for UI functionality');
+            testResults.ui = { success: true, note: 'Requires main app context' };
+        }
+
+        function showSetupModal() {
+            updateResults('uiResults', 'Setup modal requires main application context');
+            updateResults('uiResults', 'Open main application and trigger setup');
+            testResults.setupModal = { success: true, note: 'Requires main app context' };
+        }
+
+        // System Status
+        function refreshStatus() {
+            const statusDiv = document.getElementById('systemStatus');
+            const status = {
+                config: syncConfig ? 'Loaded' : 'Not loaded',
+                engine: syncEngine ? 'Loaded' : 'Not loaded',
+                backup: backupSystem ? 'Loaded' : 'Not loaded',
+                configured: syncConfig ? syncConfig.isConfigured() : false,
+                online: navigator.onLine
+            };
+
+            statusDiv.innerHTML = Object.entries(status).map(([key, value]) =>
+                `<div><strong>${key}:</strong> <span class="${
+                    value === true || value === 'Loaded' ? 'text-green-600' :
+                    value === false || value === 'Not loaded' ? 'text-red-600' : 'text-gray-600'
+                }">${value}</span></div>`
+            ).join('');
+        }
+
+        // Test Data Management
+        function loadTestData() {
+            const testSpeakers = [
+                { id: 1, name: 'Test Speaker 1', organization: 'Test Org 1', email: 'test1@example.com' },
+                { id: 2, name: 'Test Speaker 2', organization: 'Test Org 2', email: 'test2@example.com' },
+                { id: 3, name: 'Test Speaker 3', organization: 'Test Org 3', email: 'test3@example.com' }
+            ];
+
+            localStorage.setItem('rotarySpeakers', JSON.stringify(testSpeakers));
+            localStorage.setItem('rotarySpeakersLastModified', new Date().toISOString());
+            localStorage.setItem('rotarySpeakersVersion', '1');
+
+            alert('Test data loaded successfully');
+        }
+
+        function clearAllData() {
+            if (confirm('This will clear all data including backups. Continue?')) {
+                const keys = Object.keys(localStorage);
+                keys.forEach(key => {
+                    if (key.startsWith('rotary')) {
+                        localStorage.removeItem(key);
+                    }
+                });
+                alert('All data cleared');
+                refreshStatus();
+            }
+        }
+
+        function exportTestResults() {
+            const results = {
+                timestamp: new Date().toISOString(),
+                userAgent: navigator.userAgent,
+                results: testResults
+            };
+
+            const blob = new Blob([JSON.stringify(results, null, 2)], { type: 'application/json' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = `sync-test-results-${new Date().toISOString().split('T')[0]}.json`;
+            a.click();
+            URL.revokeObjectURL(url);
+        }
+
+        // Keyboard shortcuts
+        document.addEventListener('keydown', (e) => {
+            if (e.ctrlKey || e.metaKey) {
+                switch (e.key) {
+                    case 'r':
+                        e.preventDefault();
+                        refreshStatus();
+                        break;
+                    case 't':
+                        e.preventDefault();
+                        loadTestData();
+                        break;
+                    case 'c':
+                        e.preventDefault();
+                        if (e.shiftKey) {
+                            clearAllData();
+                        }
+                        break;
+                }
+            }
+        });
+    </script>
+</body>
+</html>
