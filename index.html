@@ -31,31 +31,50 @@
         }
     </script>
     <link rel="stylesheet" href="styles.css">
-
-    <!-- Sync System Scripts -->
-    <script src="sync-config.js"></script>
-    <script src="sync-engine.js"></script>
-    <script src="backup-system.js"></script>
-    <script src="sync-ui.js"></script>
 </head>
-<body class="bg-gray-50 min-h-screen font-body">
+<body class="bg-gray-50 min-h-screen font-sans">
+    <!-- Data Recovery Panel (Emergency) -->
+    <div id="recoveryPanel" class="bg-red-100 border-b border-red-300 p-3" style="display: none;">
+        <div class="container mx-auto">
+            <div class="flex items-center justify-between">
+                <div class="flex items-center space-x-2">
+                    <svg class="w-5 h-5 text-red-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.964-.833-2.732 0L4.082 18.5c-.77.833.192 2.5 1.732 2.5z"></path>
+                    </svg>
+                    <span class="text-red-800 font-medium">Data Recovery Mode</span>
+                    <span id="recoveryStatus" class="text-red-600 text-sm"></span>
+                </div>
+                <div class="flex items-center space-x-2">
+                    <button onclick="attemptRecovery()" class="bg-red-600 hover:bg-red-700 text-white px-3 py-1 rounded text-sm">
+                        Recover Data
+                    </button>
+                    <button onclick="hideRecoveryPanel()" class="text-red-600 hover:text-red-800">
+                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+                        </svg>
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
     <!-- Header -->
     <header class="bg-rotary-azure text-white shadow-lg">
         <div class="container mx-auto px-4 py-4">
             <div class="flex items-center justify-between">
                 <div class="flex items-center space-x-4">
                     <img src="images/RotaryMBS-Simple_REV.png" alt="Rotary International" class="h-10">
-                    <h1 class="text-2xl font-headline font-bold uppercase tracking-wide">GEORGETOWN ROTARY SPEAKERS</h1>
+                    <h1 class="text-2xl font-bold uppercase tracking-wide">GEORGETOWN ROTARY SPEAKERS</h1>
                 </div>
                 <div class="flex items-center space-x-4">
-                    <button id="viewToggle" class="bg-rotary-navy hover:bg-rotary-lightblue px-4 py-2 rounded-lg flex items-center space-x-2 transition font-nav">
+                    <button id="viewToggle" class="bg-white hover:bg-gray-50 text-gray-700 border border-gray-300 px-4 py-2 rounded-lg flex items-center space-x-2 transition font-medium">
                         <span id="viewToggleText">Switch to Spreadsheet</span>
                         <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7h12m0 0l-4-4m4 4l-4 4m0 6H4m0 0l4 4m-4-4l4-4"/>
                         </svg>
                     </button>
-                    <button id="exportBtn" class="bg-rotary-gold hover:bg-yellow-400 text-black font-nav px-4 py-2 rounded-lg transition">Export CSV</button>
-                    <label class="bg-rotary-gold hover:bg-yellow-400 text-black font-nav px-4 py-2 rounded-lg cursor-pointer transition">
+                    <button id="exportBtn" class="bg-white hover:bg-gray-50 text-gray-700 border border-gray-300 px-4 py-2 rounded-lg transition font-medium">Export CSV</button>
+                    <label class="bg-rotary-azure hover:bg-blue-700 text-white px-4 py-2 rounded-lg cursor-pointer transition font-medium">
                         Import CSV
                         <input type="file" id="importBtn" accept=".csv" class="hidden">
                     </label>
@@ -72,8 +91,8 @@
                 <!-- Ideas Column -->
                 <div class="kanban-column bg-white rounded-lg shadow-md">
                     <div class="p-4 bg-purple-100 rounded-t-lg">
-                        <h2 class="font-nav font-bold text-purple-900 uppercase">IDEAS</h2>
-                        <span class="text-sm text-purple-700 speaker-count font-nav">0 speakers</span>
+                        <h2 class="font-semibold text-purple-900 uppercase text-sm tracking-wide">IDEAS</h2>
+                        <span class="text-xs text-purple-700 speaker-count">0 speakers</span>
                     </div>
                     <div class="p-4 min-h-[400px] droppable" data-status="Ideas">
                         <button class="add-speaker-btn w-full py-2 px-4 border-2 border-dashed border-gray-300 rounded-lg text-gray-500 hover:border-rotary-azure hover:text-rotary-azure transition text-sm font-medium">
@@ -85,8 +104,8 @@
                 <!-- Approached Column -->
                 <div class="kanban-column bg-white rounded-lg shadow-md">
                     <div class="p-4 bg-blue-100 rounded-t-lg">
-                        <h2 class="font-nav font-bold text-blue-900 uppercase">APPROACHED</h2>
-                        <span class="text-sm text-blue-700 speaker-count font-nav">0 speakers</span>
+                        <h2 class="font-semibold text-blue-900 uppercase text-sm tracking-wide">APPROACHED</h2>
+                        <span class="text-xs text-blue-700 speaker-count">0 speakers</span>
                     </div>
                     <div class="p-4 min-h-[400px] droppable" data-status="Approached">
                         <button class="add-speaker-btn w-full py-2 px-4 border-2 border-dashed border-gray-300 rounded-lg text-gray-500 hover:border-rotary-azure hover:text-rotary-azure transition text-sm font-medium">
@@ -98,8 +117,8 @@
                 <!-- Agreed Column -->
                 <div class="kanban-column bg-white rounded-lg shadow-md">
                     <div class="p-4 bg-green-100 rounded-t-lg">
-                        <h2 class="font-nav font-bold text-green-900 uppercase">AGREED</h2>
-                        <span class="text-sm text-green-700 speaker-count font-nav">0 speakers</span>
+                        <h2 class="font-semibold text-green-900 uppercase text-sm tracking-wide">AGREED</h2>
+                        <span class="text-xs text-green-700 speaker-count">0 speakers</span>
                     </div>
                     <div class="p-4 min-h-[400px] droppable" data-status="Agreed">
                         <button class="add-speaker-btn w-full py-2 px-4 border-2 border-dashed border-gray-300 rounded-lg text-gray-500 hover:border-rotary-azure hover:text-rotary-azure transition text-sm font-medium">
@@ -111,8 +130,8 @@
                 <!-- Scheduled Column -->
                 <div class="kanban-column bg-white rounded-lg shadow-md">
                     <div class="p-4 bg-yellow-100 rounded-t-lg">
-                        <h2 class="font-nav font-bold text-yellow-900 uppercase">SCHEDULED</h2>
-                        <span class="text-sm text-yellow-700 speaker-count font-nav">0 speakers</span>
+                        <h2 class="font-semibold text-yellow-900 uppercase text-sm tracking-wide">SCHEDULED</h2>
+                        <span class="text-xs text-yellow-700 speaker-count">0 speakers</span>
                     </div>
                     <div class="p-4 min-h-[400px] droppable" data-status="Scheduled">
                         <button class="add-speaker-btn w-full py-2 px-4 border-2 border-dashed border-gray-300 rounded-lg text-gray-500 hover:border-rotary-azure hover:text-rotary-azure transition text-sm font-medium">
@@ -124,8 +143,8 @@
                 <!-- Spoken Column -->
                 <div class="kanban-column bg-white rounded-lg shadow-md">
                     <div class="p-4 bg-gray-200 rounded-t-lg">
-                        <h2 class="font-nav font-bold text-gray-900 uppercase">SPOKEN</h2>
-                        <span class="text-sm text-gray-700 speaker-count font-nav">0 speakers</span>
+                        <h2 class="font-semibold text-gray-900 uppercase text-sm tracking-wide">SPOKEN</h2>
+                        <span class="text-xs text-gray-700 speaker-count">0 speakers</span>
                     </div>
                     <div class="p-4 min-h-[400px] droppable" data-status="Spoken">
                         <button class="add-speaker-btn w-full py-2 px-4 border-2 border-dashed border-gray-300 rounded-lg text-gray-500 hover:border-rotary-azure hover:text-rotary-azure transition text-sm font-medium">
@@ -137,8 +156,8 @@
                 <!-- Dropped Column -->
                 <div class="kanban-column bg-white rounded-lg shadow-md">
                     <div class="p-4 bg-red-100 rounded-t-lg">
-                        <h2 class="font-nav font-bold text-red-900 uppercase">DROPPED</h2>
-                        <span class="text-sm text-red-700 speaker-count font-nav">0 speakers</span>
+                        <h2 class="font-semibold text-red-900 uppercase text-sm tracking-wide">DROPPED</h2>
+                        <span class="text-xs text-red-700 speaker-count">0 speakers</span>
                     </div>
                     <div class="p-4 min-h-[400px] droppable" data-status="Dropped">
                         <button class="add-speaker-btn w-full py-2 px-4 border-2 border-dashed border-gray-300 rounded-lg text-gray-500 hover:border-rotary-azure hover:text-rotary-azure transition text-sm font-medium">
@@ -166,7 +185,7 @@
                                 <option value="Dropped">Dropped</option>
                             </select>
                         </div>
-                        <button id="addSpeakerSpreadsheet" class="bg-rotary-gold hover:bg-yellow-400 text-black font-nav px-4 py-2 rounded-lg transition">
+                        <button id="addSpeakerSpreadsheet" class="bg-rotary-azure hover:bg-blue-700 text-white px-4 py-2 rounded-lg transition font-medium">
                             + Add Speaker
                         </button>
                     </div>
@@ -228,17 +247,13 @@
     <div id="speakerModal" class="hidden fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
         <div class="bg-white rounded-lg shadow-xl w-full max-w-md mx-4 max-h-[90vh] flex flex-col">
             <div class="p-6 overflow-y-auto flex-1">
-                <h3 id="modalTitle" class="text-xl font-headline font-bold uppercase mb-4">ADD SPEAKER</h3>
+                <h3 id="modalTitle" class="text-lg font-semibold uppercase mb-4 tracking-wide">ADD SPEAKER</h3>
                 <form id="speakerForm">
                     <input type="hidden" id="speakerId">
                     <div class="space-y-4">
                         <div>
                             <label class="block text-sm font-medium text-gray-700 mb-1">Name *</label>
                             <input type="text" id="speakerName" required class="w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-rotary-azure">
-                        </div>
-                        <div>
-                            <label class="block text-sm font-medium text-gray-700 mb-1">Email</label>
-                            <input type="email" id="speakerEmail" class="w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-rotary-azure">
                         </div>
                         <div>
                             <label class="block text-sm font-medium text-gray-700 mb-1">Organization</label>
@@ -251,6 +266,10 @@
                         <div>
                             <label class="block text-sm font-medium text-gray-700 mb-1">Phone</label>
                             <input type="tel" id="speakerPhone" class="w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-rotary-azure">
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-1">Email</label>
+                            <input type="email" id="speakerEmail" class="w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-rotary-azure">
                         </div>
                         <div>
                             <label class="block text-sm font-medium text-gray-700 mb-1">Topic/Expertise</label>
@@ -302,7 +321,7 @@
                     </div>
                     <div class="flex justify-end space-x-3 mt-6">
                         <button type="button" id="cancelModal" class="px-4 py-2 border rounded-lg hover:bg-gray-50 transition">Cancel</button>
-                        <button type="submit" class="px-4 py-2 bg-rotary-gold hover:bg-yellow-400 text-black font-nav rounded-lg transition">Save</button>
+                        <button type="submit" class="px-4 py-2 bg-rotary-azure hover:bg-blue-700 text-white rounded-lg transition font-medium">Save</button>
                     </div>
                 </form>
             </div>
@@ -311,16 +330,119 @@
 
     <script src="script.js"></script>
 
-    <!-- Initialize Sync System -->
+    <!-- Emergency Data Recovery Script -->
     <script>
-        // Initialize sync system after DOM is loaded
-        document.addEventListener('DOMContentLoaded', () => {
-            // Initialize with a slight delay to ensure everything is loaded
-            setTimeout(() => {
-                if (window.initializeSyncSystem) {
-                    window.initializeSyncSystem();
+        // Data Recovery Functions
+        function checkForDataLoss() {
+            const speakers = JSON.parse(localStorage.getItem('rotarySpeakers') || '[]');
+
+            // Check all possible data keys
+            const allKeys = Object.keys(localStorage);
+            const possibleDataKeys = allKeys.filter(key =>
+                key.includes('rotary') ||
+                key.includes('speaker') ||
+                key.includes('Speakers') ||
+                key.includes('backup')
+            );
+
+            if (speakers.length === 0 && possibleDataKeys.length > 0) {
+                showRecoveryPanel();
+                updateRecoveryStatus(`Found ${possibleDataKeys.length} potential data sources`);
+            }
+        }
+
+        function showRecoveryPanel() {
+            document.getElementById('recoveryPanel').style.display = 'block';
+        }
+
+        function hideRecoveryPanel() {
+            document.getElementById('recoveryPanel').style.display = 'none';
+        }
+
+        function updateRecoveryStatus(message) {
+            document.getElementById('recoveryStatus').textContent = message;
+        }
+
+        function attemptRecovery() {
+            const allKeys = Object.keys(localStorage);
+            const recoveredData = [];
+
+            // Try to recover from various possible keys
+            const possibleKeys = [
+                'rotarySpeakers',
+                'speakers',
+                'rotaryBackup_backup_1',
+                'rotaryBackup_full_1'
+            ];
+
+            for (const key of allKeys) {
+                if (key.includes('rotary') || key.includes('speaker') || key.includes('backup')) {
+                    try {
+                        const data = localStorage.getItem(key);
+                        const parsed = JSON.parse(data);
+
+                        // Check if it looks like speaker data
+                        if (Array.isArray(parsed)) {
+                            recoveredData.push(...parsed);
+                        } else if (parsed.speakers && Array.isArray(parsed.speakers)) {
+                            recoveredData.push(...parsed.speakers);
+                        } else if (parsed.data && parsed.data.speakers && Array.isArray(parsed.data.speakers)) {
+                            recoveredData.push(...parsed.data.speakers);
+                        }
+                    } catch (e) {
+                        // Continue if parsing fails
+                    }
                 }
-            }, 100);
+            }
+
+            // Remove duplicates by ID
+            const uniqueSpeakers = [];
+            const seenIds = new Set();
+
+            for (const speaker of recoveredData) {
+                if (speaker.id && !seenIds.has(speaker.id) && speaker.name) {
+                    seenIds.add(speaker.id);
+                    uniqueSpeakers.push(speaker);
+                }
+            }
+
+            if (uniqueSpeakers.length > 0) {
+                // Restore the data
+                localStorage.setItem('rotarySpeakers', JSON.stringify(uniqueSpeakers));
+                updateRecoveryStatus(`Recovered ${uniqueSpeakers.length} speakers!`);
+
+                // Reload the data and refresh the view
+                loadData();
+                renderView();
+
+                setTimeout(() => {
+                    hideRecoveryPanel();
+                    alert(`SUCCESS: Recovered ${uniqueSpeakers.length} speakers!`);
+                }, 1000);
+            } else {
+                updateRecoveryStatus('No recoverable data found');
+
+                // Create emergency download of all localStorage
+                const allData = {};
+                for (const key of allKeys) {
+                    allData[key] = localStorage.getItem(key);
+                }
+
+                const blob = new Blob([JSON.stringify(allData, null, 2)], { type: 'application/json' });
+                const url = URL.createObjectURL(blob);
+                const a = document.createElement('a');
+                a.href = url;
+                a.download = `emergency-localStorage-${new Date().toISOString().split('T')[0]}.json`;
+                a.click();
+                URL.revokeObjectURL(url);
+
+                alert('No speaker data found. Downloaded all localStorage for manual recovery.');
+            }
+        }
+
+        // Check for data loss on load
+        document.addEventListener('DOMContentLoaded', () => {
+            setTimeout(checkForDataLoss, 500);
         });
     </script>
 </body>

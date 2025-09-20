@@ -3,7 +3,8 @@
     "allow": [
       "Bash(mkdir:*)",
       "Bash(echo:*)",
-      "Read(//Users/randaleastman/Library/Safari/**)"
+      "Read(//Users/randaleastman/Library/Safari/**)",
+      "Bash(pkill:*)"
     ],
     "deny": [],
     "ask": []
